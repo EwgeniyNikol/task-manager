@@ -1,0 +1,207 @@
+import React, { useState, useEffect } from "react";
+import { Task, TaskPriority } from "@entities/task/model/types";
+import { useUpdateTask } from "@entities/task";
+import { Modal } from "@shared/ui/modal";
+import styles from "./TaskEditForm.module.scss";
+
+interface TaskEditFormProps {
+  task: Task;
+}
+
+export const TaskEditForm: React.FC<TaskEditFormProps> = ({ task }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [title, setTitle] = useState(task.title);
+  const [description, setDescription] = useState(task.description);
+  const [completed, setCompleted] = useState(task.completed);
+  const [priority, setPriority] = useState<TaskPriority>(task.priority || "medium");
+  
+  const updateTaskMutation = useUpdateTask();
+
+  useEffect(() => {
+    if (isModalOpen) {
+      setTitle(task.title);
+      setDescription(task.description);
+      setCompleted(task.completed);
+      setPriority(task.priority || "medium");
+    }
+  }, [isModalOpen, task]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!title.trim()) {
+      alert("Введите заголовок задачи");
+      return;
+    }
+
+    updateTaskMutation.mutate(
+      {
+        id: task.id,
+        title: title.trim(),
+        description: description.trim(),
+        completed,
+        priority,
+      },
+      {
+        onSuccess: () => {
+          setIsModalOpen(false);
+        },
+      }
+    );
+  };
+
+  const isSubmitting = updateTaskMutation.isPending;
+
+  const priorityOptions: { value: TaskPriority; label: string; color: string; emoji: string }[] = [
+    { value: "low", label: "Низкий", color: "#3b82f6", emoji: "🔵" },
+    { value: "medium", label: "Средний", color: "#f59e0b", emoji: "🟡" },
+    { value: "high", label: "Высокий", color: "#ef4444", emoji: "🔴" },
+  ];
+
+  return (
+    <>
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className={styles.editButton}
+      >
+        ✏️ Редактировать
+      </button>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => !isSubmitting && setIsModalOpen(false)}
+        title={`Редактирование задачи #${task.id}`}
+        width="600px"
+      >
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.formGroup}>
+            <label htmlFor={`title-${task.id}`} className={styles.label}>
+              Заголовок задачи *
+            </label>
+            <input
+              id={`title-${task.id}`}
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className={styles.input}
+              placeholder="Заголовок задачи"
+              disabled={isSubmitting}
+              maxLength={100}
+            />
+            <div className={styles.counter}>
+              {title.length}/100 символов
+            </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor={`description-${task.id}`} className={styles.label}>
+              Описание задачи
+            </label>
+            <textarea
+              id={`description-${task.id}`}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className={styles.textarea}
+              placeholder="Подробное описание задачи..."
+              disabled={isSubmitting}
+              rows={6}
+              maxLength={1000}
+            />
+            <div className={styles.counter}>
+              {description.length}/1000 символов
+            </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+              Приоритет задачи
+            </label>
+            <div className={styles.priorityOptions}>
+              {priorityOptions.map((option) => {
+                const bgColor = priority === option.value ? 
+                  `${option.color}15` : "#f9fafb";
+                
+                return (
+                  <label
+                    key={option.value}
+                    className={styles.priorityOption}
+                    style={{
+                      borderColor: priority === option.value ? option.color : "#d1d5db",
+                      backgroundColor: bgColor,
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name="priority"
+                      value={option.value}
+                      checked={priority === option.value}
+                      onChange={(e) => setPriority(e.target.value as TaskPriority)}
+                      className={styles.priorityRadio}
+                      disabled={isSubmitting}
+                    />
+                    <span className={styles.priorityLabel} style={{ color: option.color }}>
+                      {option.emoji} {option.label}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <div className={styles.checkboxGroup}>
+              <input
+                id={`completed-${task.id}`}
+                type="checkbox"
+                checked={completed}
+                onChange={(e) => setCompleted(e.target.checked)}
+                className={styles.checkbox}
+                disabled={isSubmitting}
+              />
+              <label htmlFor={`completed-${task.id}`} className={styles.checkboxLabel}>
+                Задача выполнена
+              </label>
+            </div>
+          </div>
+
+          <div className={styles.formFooter}>
+            <div className={styles.buttons}>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className={styles.cancelButton}
+                disabled={isSubmitting}
+              >
+                Отмена
+              </button>
+              <button
+                type="submit"
+                className={styles.submitButton}
+                disabled={isSubmitting || !title.trim()}
+              >
+                {isSubmitting ? (
+                  <>
+                    <span className={styles.spinner}></span>
+                    Сохранение...
+                  </>
+                ) : (
+                  "Сохранить изменения"
+                )}
+              </button>
+            </div>
+            
+            <div className={styles.hint}>
+              * — обязательное поле
+            </div>
+          </div>
+          
+          {updateTaskMutation.isError && (
+            <div className={styles.error}>
+              Ошибка при сохранении: {updateTaskMutation.error.message}
+            </div>
+          )}
+        </form>
+      </Modal>
+    </>
+  );
+};
