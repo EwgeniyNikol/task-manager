@@ -42,7 +42,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, style }) => {
     return parts.length > 1 ? `${parts[0][0]}. ${parts[1]}` : fullName;
   };
 
-  const priorityInfo = getPriorityInfo(task.priority);
+  const priorityInfo = getPriorityInfo(task.priority || "low");
   const formattedDate = formatDate(task.createdAt);
   const userName = getRandomUserName(task.id);
 

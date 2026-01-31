@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useCreateTask } from "@entities/task";
-import { TaskPriority } from "@entities/task/model/types";
+import { TaskPriority, PriorityOption } from "@entities/task/model/types";
 import styles from "./CreateTaskForm.module.scss";
 
 interface CreateTaskFormProps {
@@ -48,10 +48,11 @@ export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
 
   const isSubmitting = createTaskMutation.isPending;
 
-  const priorityOptions: { value: TaskPriority; label: string; color: string }[] = [
+  const priorityOptions: PriorityOption[] = [
     { value: "low", label: "Низкий", color: "#3b82f6", emoji: "🔵" },
     { value: "medium", label: "Средний", color: "#f59e0b", emoji: "🟡" },
     { value: "high", label: "Высокий", color: "#ef4444", emoji: "🔴" },
+    { value: "critical", label: "Критический", color: "#8b0000", emoji: "💥" },
   ];
 
   return (

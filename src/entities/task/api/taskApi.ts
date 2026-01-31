@@ -1,76 +1,79 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Task, TaskFormData, TasksResponse, TaskPriority } from "../model/types";
+import { Task, TaskFormData, TasksResponse } from "../model/types";
 
 const TASK_QUERY_KEY = "tasks";
+const API_BASE_URL = "/api";
 
-// Функция для генерации описания
-const generateDescription = (title: string, id: number) => {
-  const options = [
-    `Это важная задача, которая требует внимания. Ключевой элемент нашего плана.`,
-    `Требуется выполнить в ближайшее время. Приоритет - высокий.`,
-    `Данная задача включает несколько этапов выполнения.`,
-    `Описание задачи. Приоритет - высокий, сроки сжатые.`,
-    `Задача связана с основными бизнес-процессами компании.`,
-  ];
-  return options[Math.floor(Math.random() * options.length)];
+// API функции
+const fetchTasks = async (cursor = 0, limit = 20): Promise<TasksResponse> => {
+  // Json-server использует _page и _limit для пагинации
+  const page = Math.floor(cursor / limit) + 1;
+  const response = await fetch(`${API_BASE_URL}/tasks?_page=${page}&_limit=${limit}`);
+  if (!response.ok) throw new Error("Ошибка при загрузке задач");
+  const tasks = await response.json();
+  
+  // Получаем общее количество из заголовка
+  const total = parseInt(response.headers.get('X-Total-Count') || '100', 10);
+  const hasMore = cursor + limit < total;
+  
+  return {
+    tasks,
+    hasMore,
+    nextCursor: hasMore ? cursor + limit : cursor,
+    total,
+  };
 };
 
-// Случайный приоритет для моковых данных
-const getRandomPriority = (): TaskPriority => {
-  const priorities: TaskPriority[] = ["low", "medium", "high"];
-  return priorities[Math.floor(Math.random() * priorities.length)];
+const fetchTask = async (id: number): Promise<Task> => {
+  const response = await fetch(`${API_BASE_URL}/tasks/${id}`);
+  if (!response.ok) throw new Error("Задача не найдена");
+  return response.json();
 };
 
-// Создаем мок-данные
-const createMockTasks = () => {
-  const tasks: Task[] = [];
-  for (let i = 0; i < 200; i++) {
-    const id = i + 1;
-    const titles = [
-      `Разработать новый функционал ${id}`,
-      `Исправить критическую ошибку ${id}`,
-      `Оптимизировать производительность ${id}`,
-      `Добавить тесты для модуля ${id}`,
-      `Рефакторинг кодовой базы ${id}`,
-      `Интеграция с внешним API ${id}`,
-      `Создать документацию ${id}`,
-    ];
-    const title = titles[Math.floor(Math.random() * titles.length)];
-    tasks.push({
-      id,
-      title,
-      description: generateDescription(title, id),
-      completed: Math.random() > 0.5,
-      createdAt: new Date(Date.now() - Math.random() * 10000000000).toISOString(),
-      userId: 1,
-      priority: getRandomPriority(),
-    });
-  }
-  return tasks;
+const createTask = async (taskData: TaskFormData): Promise<Task> => {
+  const newTask = {
+    ...taskData,
+    completed: taskData.completed || false,
+    priority: taskData.priority || "medium",
+    createdAt: new Date().toISOString(),
+    userId: 1,
+  };
+  
+  const response = await fetch(`${API_BASE_URL}/tasks`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(newTask),
+  });
+  
+  if (!response.ok) throw new Error("Ошибка при создании задачи");
+  return response.json();
 };
 
-let mockTasks = createMockTasks();
+const updateTask = async ({ id, ...taskData }: Partial<Task> & { id: number }): Promise<Task> => {
+  const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(taskData),
+  });
+  
+  if (!response.ok) throw new Error("Ошибка при обновлении задачи");
+  return response.json();
+};
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const deleteTask = async (id: number): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
+    method: "DELETE",
+  });
+  
+  if (!response.ok) throw new Error("Ошибка при удалении задачи");
+};
 
+// React Query хуки
 export const useTasksInfiniteQuery = () => {
   return useInfiniteQuery({
     queryKey: [TASK_QUERY_KEY, "infinite"],
     queryFn: async ({ pageParam = 0 }): Promise<TasksResponse> => {
-      await delay(300);
-
-      const start = pageParam;
-      const limit = 20;
-      const end = start + limit;
-
-      const tasks = mockTasks.slice(start, end);
-
-      return {
-        tasks,
-        hasMore: end < mockTasks.length,
-        nextCursor: end,
-        total: mockTasks.length,
-      };
+      return fetchTasks(pageParam, 20);
     },
     getNextPageParam: (lastPage) => {
       return lastPage.hasMore ? lastPage.nextCursor : undefined;
@@ -82,12 +85,7 @@ export const useTasksInfiniteQuery = () => {
 export const useTaskQuery = (id: number) => {
   return useQuery({
     queryKey: [TASK_QUERY_KEY, id],
-    queryFn: async () => {
-      await delay(200);
-      const task = mockTasks.find(t => t.id === id);
-      if (!task) throw new Error("Задача не найдена");
-      return task;
-    },
+    queryFn: () => fetchTask(id),
     enabled: !!id,
   });
 };
@@ -96,21 +94,9 @@ export const useCreateTask = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (taskData: TaskFormData) => {
-      await delay(500);
-      const newTask: Task = {
-        id: mockTasks.length + 1,
-        ...taskData,
-        completed: taskData.completed || false,
-        priority: taskData.priority || "medium", // По умолчанию средний приоритет
-        createdAt: new Date().toISOString(),
-        userId: 1,
-      };
-      mockTasks.unshift(newTask);
-      return newTask;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [TASK_QUERY_KEY] });
+    mutationFn: createTask,
+    onSuccess: () => { console.log("useCreateTask: инвалидируем кэш задач");
+      queryClient.invalidateQueries({ queryKey: [TASK_QUERY_KEY], refetchType: "all" });
     },
   });
 };
@@ -119,16 +105,9 @@ export const useUpdateTask = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, ...taskData }: Partial<Task> & { id: number }) => {
-      await delay(500);
-      const index = mockTasks.findIndex(t => t.id === id);
-      if (index === -1) throw new Error("Задача не найдена");
-
-      mockTasks[index] = { ...mockTasks[index], ...taskData };
-      return mockTasks[index];
-    },
+    mutationFn: updateTask,
     onSuccess: (updatedTask) => {
-      queryClient.invalidateQueries({ queryKey: [TASK_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [TASK_QUERY_KEY], refetchType: "all" });
       queryClient.invalidateQueries({ queryKey: [TASK_QUERY_KEY, updatedTask.id] });
     },
   });
@@ -138,15 +117,17 @@ export const useDeleteTask = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: number) => {
-      await delay(500);
-      const index = mockTasks.findIndex(t => t.id === id);
-      if (index > -1) {
-        mockTasks.splice(index, 1);
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [TASK_QUERY_KEY] });
+    mutationFn: deleteTask,
+    onSuccess: () => { console.log("useCreateTask: инвалидируем кэш задач");
+      queryClient.invalidateQueries({ queryKey: [TASK_QUERY_KEY], refetchType: "all" });
     },
   });
+};
+
+export const taskApi = {
+  fetchTasks,
+  fetchTask,
+  createTask,
+  updateTask,
+  deleteTask,
 };

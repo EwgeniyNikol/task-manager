@@ -30,3 +30,11 @@ export interface PaginationParams {
 }
 
 export type TaskStatus = "all" | "completed" | "pending";
+
+// Новый интерфейс для опций приоритета
+export interface PriorityOption {
+  value: TaskPriority;
+  label: string;
+  color: string;
+  emoji: string;
+}

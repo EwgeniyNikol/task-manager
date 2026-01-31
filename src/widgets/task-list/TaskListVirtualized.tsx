@@ -17,6 +17,7 @@ export const TaskListVirtualized: React.FC = () => {
   const allTasks = data?.pages.flatMap((page) => page.tasks) || [];
   const rowCount = allTasks.length + (hasNextPage ? 1 : 0);
 
+  console.log("DEBUG TaskList:", { isLoading, hasNextPage, allTasksLength: allTasks.length, error: error?.message });
   const loadMoreRows = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
       fetchNextPage();

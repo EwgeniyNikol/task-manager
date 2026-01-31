@@ -1,73 +1,120 @@
-# React + TypeScript + Vite
+# Task Manager - Менеджер задач
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Современное React-приложение для управления задачами с виртуализированным списком, бэкендом на json-server и production-сборкой.
 
-Currently, two official plugins are available:
+## 🚀 Быстрый старт
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Установка зависимостей
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Запуск в development режиме (фронтенд + бэкенд)
+```bash
+npm run dev:full
 ```
+
+**Приложение будет доступно:** http://localhost:5173  
+**API бэкенда:** http://localhost:3001/tasks
+
+### Production сборка и запуск (одной командой)
+```bash
+npm run start:full
+```
+
+**Приложение будет доступно:** http://localhost:3000  
+**API будет проксироваться через:** http://localhost:3000/api/tasks
+
+## 📁 Структура проекта (Feature-Sliced Design)
+
+```
+task-manager/
+├── src/
+│   ├── entities/           # Бизнес-сущности (задачи)
+│   ├── features/           # Фичи (создание, редактирование задач)
+│   ├── pages/              # Страницы приложения
+│   ├── widgets/            # Виджеты (списки задач)
+│   ├── shared/             # Общие компоненты
+│   └── app/                # Конфигурация приложения
+├── db.json                 # База данных JSON-server
+├── server.cjs              # Express сервер для production
+└── package.json
+```
+
+## 🛠 Технологии
+
+- **React 18** с TypeScript
+- **Vite** для сборки
+- **React Query (TanStack Query)** для управления состоянием
+- **json-server** для мокового API
+- **Express** для production сервера
+- **React Virtualized** для виртуализации списков
+- **Feature-Sliced Design** архитектура
+
+## 🔧 Доступные скрипты
+
+- \`npm run dev\` - запуск фронтенда в dev режиме
+- \`npm run build\` - production сборка фронтенда
+- \`npm run preview\` - превью production сборки
+- \`npm run backend\` - запуск json-server API
+- \`npm run dev:full\` - запуск фронтенда и бэкенда вместе
+- \`npm run preview:full\` - сборка + запуск preview с бэкендом
+- \`npm run start:full\` - production сборка и запуск всего приложения
+
+## 📡 API Endpoints
+
+После запуска бэкенда доступны следующие endpoints:
+
+- \`GET /api/tasks\` - список всех задач
+- \`GET /api/tasks/:id\` - получение задачи по ID
+- \`POST /api/tasks\` - создание новой задачи
+- \`PATCH /api/tasks/:id\` - обновление задачи
+- \`DELETE /api/tasks/:id\` - удаление задачи
+- \`GET /api/tasks/count\` - количество задач
+
+## 🎯 Особенности реализации
+
+1. **Виртуализированный список** - плавная работа с большим количеством задач через React Virtualized
+2. **Real-time обновления** - мгновенное отображение изменений через React Query
+3. **Оффлайн-first подход** - кэширование данных через React Query
+4. **Production-ready** - единая команда для запуска всего приложения
+5. **Типизированный код** - полная TypeScript поддержка
+6. **Архитектура FSD** - четкое разделение по слоям (entities, features, widgets, etc.)
+
+## ⚡ Решенные проблемы
+
+### ✅ Исправлены ошибки TypeScript (17 ошибок)
+- Неиспользуемые параметры функций
+- Отсутствующие типы для SCSS модулей
+- Несоответствие типов (\`TaskPriority | undefined\` vs \`TaskPriority\`)
+- Созданы декларации \`*.scss.d.ts\` для всех SCSS модулей
+
+### ✅ Настроена работа с API
+- Заменены моковые данные на реальный бэкенд (json-server)
+- Настроен CORS для кросс-доменных запросов
+- Реализовано проксирование API через Vite (dev) и Express (production)
+- Исправлена пагинация (работает \`_page\` и \`_limit\` вместо \`_start\`/\`_end\`)
+
+### ✅ Production-готовность
+- Написан Express сервер (\`server.cjs\`) для раздачи статики и проксирования API
+- Реализован единый запуск одной командой \`npm run start:full\`
+- Настроен правильный порядок запуска (сборка → бэкенд → фронтенд)
+
+### ✅ Очистка проекта
+- Удалены временные файлы (\`.orig\`, \`.backup\`, \`.temp\`)
+- Обновлен \`.gitignore\`
+- Удалены неиспользуемые \`index.ts\` файлы
+
+### ✅ Исправление функциональности
+- Исправлена сортировка (убрана \`_sort=id\`, которая возвращала пустой массив)
+- Исправлена пагинация для бесконечного скролла
+- Настроена виртуализация списка
+
+## 🔒 Требования
+
+- Node.js 18 или выше
+- npm 9 или выше
+
+## 📝 Лицензия
+
+MIT
