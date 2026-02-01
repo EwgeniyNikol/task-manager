@@ -39,3 +39,14 @@ db.json
 
 # Server
 server.js
+
+# Log files
+*.log
+
+# Temporary scripts
+add_*.js
+*.list
+fix*.js
+restore*.js
+server-simple.cjs
+start-app.*

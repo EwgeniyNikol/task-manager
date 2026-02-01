@@ -4,18 +4,20 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "start": "node start-windows.cjs",
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "backend": "json-server --watch db.json --port 3001",
-    "dev:full": "concurrently \"npm run backend\" \"npm run dev\"",
-    "preview:full": "npm run build && concurrently \"npm run backend\" \"npm run preview\"",
+    "backend": "json-server --watch db.json --port 3003 --host localhost",
+    "dev:full": "concurrently -n 'backend,frontend' -c 'blue,green' \"npm run backend\" \"npm run dev\"",
+    "preview:full": "npm run build && concurrently -n 'backend,frontend' -c 'blue,green' \"npm run backend\" \"npm run preview\"",
     "start:full": "npm run build && node server.cjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.18",
     "@tanstack/react-query-devtools": "^5.91.2",
+    "@tanstack/react-virtual": "^3.13.18",
     "@types/react-router-dom": "^5.3.3",
     "axios": "^1.13.2",
     "express": "^5.2.1",
@@ -23,7 +25,6 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.12.0",
-    "react-virtualized": "^9.22.6",
     "sass": "^1.97.2"
   },
   "devDependencies": {
@@ -31,14 +32,13 @@
     "@types/node": "^24.10.9",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
-    "@types/react-virtualized": "^9.22.3",
     "@vitejs/plugin-react": "^5.1.1",
     "concurrently": "^8.2.2",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
-    "json-server": "^1.0.0-beta.5",
+    "json-server": "^0.17.4",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4"

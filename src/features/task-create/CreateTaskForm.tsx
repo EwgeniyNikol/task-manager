@@ -41,6 +41,9 @@ export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
           setCompleted(false);
           setPriority("medium");
           if (onSuccess) onSuccess();
+          // Reset form
+          const form = document.querySelector("form");
+          if (form) form.reset();
         },
       }
     );
