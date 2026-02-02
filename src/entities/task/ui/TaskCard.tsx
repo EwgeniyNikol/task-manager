@@ -10,7 +10,7 @@ interface TaskCardProps {
 }
 
 // Мемоизируем компонент для предотвращения лишних рендеров
-const TaskCardComponent: React.FC<TaskCardProps> = ({ task, style }) => {
+const TaskCardComponent: React.FC<TaskCardProps> = ({ task, index, style }) => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("ru-RU");
@@ -51,7 +51,7 @@ const TaskCardComponent: React.FC<TaskCardProps> = ({ task, style }) => {
     <div className={styles.card} style={style}>
       {/* Верхняя строка: номер, приоритет, статус */}
       <div className={styles.topRow}>
-        <div className={styles.taskId}>{task.id} задача</div>
+        <div className={styles.taskId}>Задача {index + 1}</div>
         <div 
           className={styles.priorityBadge} 
           style={{ 
