@@ -55,7 +55,6 @@ export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
     { value: "low", label: "Низкий", color: "#3b82f6", emoji: "🔵" },
     { value: "medium", label: "Средний", color: "#f59e0b", emoji: "🟡" },
     { value: "high", label: "Высокий", color: "#ef4444", emoji: "🔴" },
-    { value: "critical", label: "Критический", color: "#8b0000", emoji: "💥" },
   ];
 
   return (

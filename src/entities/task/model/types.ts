@@ -8,7 +8,7 @@ export interface Task {
   priority?: TaskPriority; // Добавили приоритет
 }
 
-export type TaskPriority = "low" | "medium" | "high" | "critical";
+export type TaskPriority = "low" | "medium" | "high";
 
 export interface TaskFormData {
   title: string;

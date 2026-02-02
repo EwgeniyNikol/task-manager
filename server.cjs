@@ -6,7 +6,6 @@ const { spawn } = require('child_process');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Запускаем json-server
 console.log('🔄 Запуск json-server API...');
 const jsonServer = spawn('npx', ['json-server', '--watch', 'db.json', '--port', '3003', '--host', 'localhost'], {
   stdio: 'inherit',
@@ -18,7 +17,6 @@ jsonServer.on('error', (err) => {
   process.exit(1);
 });
 
-// Простой proxy
 app.use('/api', (req, res) => {
   const http = require('http');
   const options = {
@@ -37,16 +35,13 @@ app.use('/api', (req, res) => {
   req.pipe(proxyReq);
 });
 
-// Статика
 app.use(express.static(path.join(__dirname, 'dist')));
 
-// SPA fallback - проверяем существование файла
 app.use((req, res, next) => {
   const filePath = path.join(__dirname, 'dist', req.path);
   
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
-      // Файла нет или это директория - отдаем index.html
       return res.sendFile(path.join(__dirname, 'dist', 'index.html'));
     }
     next();

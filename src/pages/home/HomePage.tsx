@@ -10,7 +10,7 @@ export const HomePage: React.FC = () => {
         <div className={styles.headerContent}>
           <h1 className={styles.title} translate="no">Список задач</h1>
           <p className={styles.subtitle} translate="no">
-            Бесконечный скролл с виртуализацией. Всего задач: 200
+            Бесконечный скролл с виртуализацией. Всего задач: 200 +
           </p>
         </div>
         <CreateTaskButton />
