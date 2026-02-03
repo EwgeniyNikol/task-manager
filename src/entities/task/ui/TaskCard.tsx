@@ -72,7 +72,7 @@ const TaskCardComponent: React.FC<TaskCardProps> = ({ task, index, style }) => {
 
       {/* Описание */}
       <div className={styles.description}>
-        Тестовое описание: {task.description || "Нет описания"}
+        {task.description || "Нет описания"}
       </div>
 
       {/* Нижняя строка: исполнитель, дата, кнопка */}
